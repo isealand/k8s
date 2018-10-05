@@ -265,3 +265,24 @@ I1004 08:17:53.549874    8940 log.go:172] http: proxy error: dial tcp 127.0.0.1:
 systemctl restart docker
 systemctl restart kubelet
 
+
+---
+[root@k8smaster ~]# kubectl get nodes
+NAME        STATUS     ROLES    AGE   VERSION
+k8smaster   Ready      master   26m   v1.12.0
+k8snode1    NotReady   <none>   10m   v1.12.0
+
+节点状态NotReady排查：
+```
+journalctl -f -u kubelet
+```
+
+log：
+Oct 05 15:16:57 k8snode1 kubelet[2968]: E1005 15:16:57.908081    2968 kubelet.go:2167] Container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+Oct 05 15:17:02 k8snode1 kubelet[2968]: W1005 15:17:02.910454    2968 cni.go:188] Unable to update cni config: No networks found in /etc/cni/net.d
+Oct 05 15:17:02 k8snode1 kubelet[2968]: E1005 15:17:02.911939    2968 kubelet.go:2167] Container runtime network not ready: NetworkReady=false reason:NetworkPluginNotReady message:docker: network plugin is not ready: cni config uninitialized
+Oct 05 15:17:03 k8snode1 kubelet[2968]: E1005 15:17:03.801513    2968 summary_sys_containers.go:45] Failed to get system container stats for "/system.slice/kubelet.service": failed to get cgroup stats for "/system.slice/kubelet.service": failed to get container info for "/system.slice/kubelet.service": unknown container "/system.slice/kubelet.service"
+Oct 05 15:17:03 k8snode1 kubelet[2968]: E1005 15:17:03.801595    2968 summary_sys_containers.go:45] Failed to get system container stats for "/system.slice/docker.service": failed to get cgroup stats for "/system.slice/docker.service": failed to get container info for "/system.slice/docker.service": unknown container "/system.slice/docker.service"
+
+解决：
+unkown

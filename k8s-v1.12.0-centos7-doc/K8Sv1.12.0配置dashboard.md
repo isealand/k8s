@@ -1,4 +1,4 @@
-# 配置dashboard
+# 配置dashboard[待验证]
 默认是没web界面的，可以在master机器上安装一个dashboard插件，实现通过web来管理
 
 ## 下载配置文件

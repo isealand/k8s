@@ -22,5 +22,7 @@ do
   echo "sleep 2 ---------------"
   sleep 2
 done
+#docker save 3cab8e1b9802 -o k8s.gcr.io-etcd-amd64-3.2.24.tar
 #chmod a+x load_local_images.sh
 #执行 sh ./save_local_images.sh stringKey
+

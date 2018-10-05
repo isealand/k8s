@@ -1,10 +1,11 @@
 #!/bin/bash
 #所有节点前期的准备工作
+yum install -y vim wget
 
 #配置hosts解析(如下操作在所有节点操作)
 cat >>/etc/hosts<<EOF
-192.168.2.7 k8smaster
-192.168.2.6 k8snode1
+192.168.2.6 k8smaster
+192.168.2.7 k8snode1
 EOF
 
 #关闭所有节点系统防火墙
@@ -12,15 +13,16 @@ systemctl stop firewalld
 systemctl disable firewalld
 
 #关闭所有节点SElinux
-setenforce 0
 sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
+#需要手动确认！！！！！
+setenforce 0
 
 #关闭所有节点swap
 swapoff -a
-# need---->修改/etc/fstab文件，注释掉SWAP的自动挂载，使用free -m确认swap已经关闭。
+# need---->手动修改/etc/fstab文件，注释掉SWAP的自动挂载，使用free -m确认swap已经关闭。
 
 #调整内核参数(配置转发相关参数)
-cat <<EOF >  /etc/sysctl.d/k8s.conf
+cat > /etc/sysctl.d/k8s.conf <<EOF
 net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 vm.swappiness=0

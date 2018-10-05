@@ -19,4 +19,7 @@ done
 #docker tag 5a1527e735da k8s.gcr.io/kube-scheduler:v1.12.0
 #docker tag 4b2e93f0133d k8s.gcr.io/k8s-dns-sidecar:1.14.13
 #docker tag 6dc8ef8287d3 k8s.gcr.io/k8s-dns-dnsmasq-nanny:1.14.13
-#docker tag 367cdc8433a4 k8s.gcr.io/coredns:1.2.2#
+#docker tag 367cdc8433a4 k8s.gcr.io/coredns:1.2.2
+#docker tag 0dab2435c100 k8s.gcr.io/kubernetes-dashboard:v1.10.0
+#docker tag 3cab8e1b9802 k8s.gcr.io/etcd:3.2.24
+

@@ -42,6 +42,15 @@ kubelet.x86_64 0:1.12.0-0
 kubernetes-cni.x86_64 0:0.6.0-0
 ```
 
+ 
+
+3.启动Docker与kubelet服务(设置Docker与kubelet服务开机自启)
+```
+systemctl enable docker && systemctl start docker
+systemctl enable kubelet && systemctl start kubelet
+```
+提示：此时kubelet的服务运行状态是异常的，因为缺少主配置文件kubelet.conf。但可以暂不处理，因为在完成Master节点的初始化后才会生成这个配置文件。
+
 ```
 # 配置kubelet的cgroups
 # 获取docker的cgroups
@@ -53,14 +62,6 @@ EOF
 
 #KUBELET_EXTRA_ARGS="--cgroup-driver=$DOCKER_CGROUPS --pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause-amd64:3.1"
 ```
-
-
-3.启动Docker与kubelet服务(设置Docker与kubelet服务开机自启)
-```
-systemctl enable docker && systemctl start docker
-systemctl enable kubelet && systemctl start kubelet
-```
-提示：此时kubelet的服务运行状态是异常的，因为缺少主配置文件kubelet.conf。但可以暂不处理，因为在完成Master节点的初始化后才会生成这个配置文件。
 
 至此，在所有机器上安装所需的软件已经结束。
 
@@ -90,7 +91,8 @@ kubeadm config images list
 ```
 
 ```
-#拉取镜像脚本，参考《k8s-1.12.0-docker-pull-images.sh》
+#1、拉取镜像脚本，参考《k8s-1.12.0-docker-pull-images.sh》/《load-docker-images.sh》
+#2、docker pull registry.cn-hangzhou.aliyuncs.com/google_containers/etcd-amd64:3.2.24
 ```
 上面的shell脚本主要做了3件事，下载各种需要用到的容器镜像、重新打标记为符合k8s命令规范的版本名称、清除旧的容器镜像。
 
@@ -102,6 +104,7 @@ kubeadm config images list
 
 执行上述shell脚本，等待下载完成后，执行kubeadm init
 ```
+#注意更换master的IP
 kubeadm init --kubernetes-version=v1.12.0 --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.2.7 --token-ttl 0
 ```
 这里--kubernetes-version是指定版本（不做设置则默认安装最新版本），--pod-network-cidr表示k8s中pod使用的网络段，--apiserver-advertise-address表示k8s apiserver的地址使用master的192.168.2.7，设置了--token-ttl 0，所以该命令永久有效（默认24H）
@@ -225,6 +228,7 @@ daemonset.extensions/kube-flannel-ds created
 kubectl get pods --all-namespaces
 ```
 
+
 如果还有服务处于非Running状态， 可尝试重启服务：
 ```
 systemctl restart docker
@@ -232,6 +236,21 @@ systemctl restart kubelet
 ```
  
 
+```
+[root@k8smaster ~]# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                READY   STATUS             RESTARTS   AGE
+kube-system   coredns-576cbf47c7-mlhq5            0/1     CrashLoopBackOff   1          3m54s
+kube-system   coredns-576cbf47c7-sv8gq            0/1     CrashLoopBackOff   1          3m54s
+kube-system   etcd-k8smaster                      1/1     Running            0          3m28s
+kube-system   kube-apiserver-k8smaster            1/1     Running            0          3m22s
+kube-system   kube-controller-manager-k8smaster   1/1     Running            0          3m25s
+kube-system   kube-flannel-ds-bdh75               1/1     Running            0          78s
+kube-system   kube-proxy-v2w8g                    1/1     Running            0          3m54s
+kube-system   kube-scheduler-k8smaster            1/1     Running            0          3m35s
+[root@k8smaster ~]# kubectl get nodes
+NAME        STATUS   ROLES    AGE     VERSION
+k8smaster   Ready    master   4m58s   v1.12.0
+```
 
 ---
  
@@ -273,6 +292,12 @@ This node has joined the cluster:
 
 Run 'kubectl get nodes' on the master to see this node join the cluster.
 ```
+
+节点状态NotReady排查：
+```
+journalctl -f -u kubelet
+```
+
 
 #### 单机做集群
 默认情况下，Master节点不参与工作负载，但如果希望安装出一个All-In-One的k8s环境，则可以Master节点执行以下命令，让Master节点也成为一个Node节点：
