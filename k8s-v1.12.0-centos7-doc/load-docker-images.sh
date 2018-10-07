@@ -9,7 +9,7 @@ for file_a in $current_path/*.tar; do
    docker load < $current_path/$temp_file
    sleep 2
 done
-
+docker images
 
 #docker tag da86e6ba6ca1 k8s.gcr.io/pause:3.1
 #docker tag 50e7aa4dbbf8 quay.io/coreos/flannel:v0.9.1-amd64

@@ -42,6 +42,9 @@ kubeadm.x86_64 0:1.12.0-0
 kubectl.x86_64 0:1.12.0-0    
 kubelet.x86_64 0:1.12.0-0   
 kubernetes-cni.x86_64 0:0.6.0-0
+
+#
+yum install -y kubeadm.x86_64 0:1.12.0-0 kubectl.x86_64 0:1.12.0-0 kubelet.x86_64 0:1.12.0-0 kubernetes-cni.x86_64 0:0.6.0-0
 ```
 
  
@@ -149,6 +152,8 @@ kubeadm reset
 kubeadm init --kubernetes-version=v1.12.0 --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=192.168.2.7
 后显示token会改变，这个需要注意！
 ```
+
+ 
 
 
 #### 配置kubectl认证信息（Master节点操作）
@@ -264,6 +269,40 @@ k8smaster   Ready    master   4m58s   v1.12.0
  
 #### 下载/导入images(所有节点的操作)
 
+节点包括的镜像：
+```
+kube-proxy:v1.12.0
+pause:3.1
+```
+
+
+- 方案1：
+1、同步/上传 images的tar包到节点服务器，
+
+2、导入images
+```
+sh ./load-docker-images.sh
+#需要检查images名称， 视情况执行docker tag
+docker images
+```
+
+- 方案2：
+
+网络拉取镜像：
+```
+sh ./k8s-1.12.0-docker-pull-images.sh
+```
+
+
+systemctl restart docker
+
+
+DOCKER_CGROUPS=$(docker info | grep 'Cgroup' | cut -d' ' -f3)
+echo $DOCKER_CGROUPS
+cat >/etc/sysconfig/kubelet<<EOF
+KUBELET_EXTRA_ARGS="--cgroup-driver=$DOCKER_CGROUPS"
+EOF
+
 #### 让node1、node2加入集群(所有节点的操作)
 
 
@@ -301,7 +340,16 @@ This node has joined the cluster:
 Run 'kubectl get nodes' on the master to see this node join the cluster.
 ```
 
-节点状态NotReady排查：
+
+查看节点状态：
+docker ps -a
+
+CONTAINER ID        IMAGE                  COMMAND                  CREATED             STATUS              PORTS               NAMES
+edbf27545942        9c3a9d3f09a0           "/usr/local/bin/ku..."   3 seconds ago       Up 1 second                             k8s_kube-proxy_kube-proxy-2t94x_kube-system_a61afd6c-c9fc-11e8-bf5f-0800279edc17_0
+de9fa40c079c        k8s.gcr.io/pause:3.1   "/pause"                 5 seconds ago       Up 2 seconds                            k8s_POD_kube-proxy-2t94x_kube-system_a61afd6c-c9fc-11e8-bf5f-0800279edc17_0
+
+
+- 节点状态NotReady排查：
 ```
 journalctl -f -u kubelet
 ```
