@@ -9,17 +9,37 @@ cat >>/etc/hosts<<EOF
 EOF
 
 #关闭所有节点系统防火墙
+#查看状态： systemctl status firewalld
 systemctl stop firewalld
+#在开机时禁用
 systemctl disable firewalld
 
+
+
+#查看SELinux的状态  sestatus
 #关闭所有节点SElinux
 sed -i 's/SELINUX=permissive/SELINUX=disabled/' /etc/sysconfig/selinux
-#需要手动确认！！！！！
+#修改对应文档以防重启生效
+sed -i "s#SELINUX=enforcing#SELINUX=disabled#g" /etc/selinux/config
+#不重启让其生效
 setenforce 0
+#加到系统默认启动里面
+echo "/usr/sbin/setenforce 0" >> /etc/rc.local
+
+sestatus
+
 
 #关闭所有节点swap
-swapoff -a
+swapoff -a && swapon -a
 # need---->手动修改/etc/fstab文件，注释掉SWAP的自动挂载，使用free -m确认swap已经关闭。
+
+永久关闭：
+echo "swapoff -a" >> /etc/rc.local
+
+
+free -m
+
+
 
 #调整内核参数(配置转发相关参数)
 cat > /etc/sysctl.d/k8s.conf <<EOF
@@ -27,6 +47,11 @@ net.bridge.bridge-nf-call-ip6tables = 1
 net.bridge.bridge-nf-call-iptables = 1
 vm.swappiness=0
 EOF
+
+
+#执行这个使其生效，不用重启
+sysctl -p
+
 
 sysctl --system
 

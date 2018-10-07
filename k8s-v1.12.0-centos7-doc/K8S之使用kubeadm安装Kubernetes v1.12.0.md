@@ -31,7 +31,9 @@ k8s 1.12.0
 #1.1 安装docker
 #1.2 安装kubeadm, kubelet和kubectl
 
-yum -y install docker kubelet kubeadm kubectl kubernetes-cni
+#注意指定版本，否则安装最新版！！！
+yum -y install docker
+yum -y install kubelet kubeadm kubectl kubernetes-cni
 ```
 
 ```
@@ -156,6 +158,12 @@ export KUBECONFIG=/etc/kubernetes/admin.conf
 也可以直接放到~/.bash_profile
 echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
 
+#or:
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+
 #对于非root用户
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
@@ -254,7 +262,7 @@ k8smaster   Ready    master   4m58s   v1.12.0
 
 ---
  
-
+#### 下载/导入images(所有节点的操作)
 
 #### 让node1、node2加入集群(所有节点的操作)
 
@@ -330,6 +338,10 @@ kubectl get cs
 ```
 systemctl restart docker
 systemctl restart kubelet
+
+
+systemctl status kubelet
+journalctl -xeu kubelet
 ```
  
 

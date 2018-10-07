@@ -150,7 +150,8 @@ Oct  3 23:59:42 localhost kubelet: E1003 23:59:42.602656    6212 kubelet.go:2236
 Oct  3 23:59:42 localhost kubelet: E1003 23:59:42.702910    6212 kubelet.go:2236] node "localhost.localdomain" not found
 Oct  3 23:59:42 localhost kubelet: E1003 23:59:42.803576    6212 kubelet.go:2236] node "localhost.localdomain" not found
 ```
-
+解决：
+重启后系统防火墙、swap都是打开状态， 改为永久关闭。
 
 
 #开机后重新走一遍配置，初始化K8S启动ok
